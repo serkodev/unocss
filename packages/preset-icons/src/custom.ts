@@ -14,8 +14,17 @@ export function customIconsPreloader() {
         }
       }
     },
-    get: (collection: string, icon: string) => {
-      return results.get(`${collection}:${icon}`)
+    assignProps: (collection: string, icon: string, props: Record<string, string>) => {
+      const customIcon = results.get(`${collection}:${icon}`)
+      if (customIcon) {
+        const { attributes } = customIcon
+
+        if (attributes.width)
+          props.width = attributes.width
+
+        if (attributes.height)
+          props.height = attributes.height
+      }
     },
   }
 }

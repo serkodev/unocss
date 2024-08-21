@@ -57,16 +57,7 @@ export function createPresetIcons(lookupIconLoader: (options: IconsOptions) => P
           return result
         },
         async iconCustomizer(collection, icon, props) {
-          const customIcon = preloader.get(collection, icon)
-          if (customIcon) {
-            const { attributes } = customIcon
-
-            if (attributes.width)
-              props.width = attributes.width
-
-            if (attributes.height)
-              props.height = attributes.height
-          }
+          preloader.assignProps(collection, icon, props)
 
           await customizations.iconCustomizer?.(collection, icon, props)
           if (unit) {
