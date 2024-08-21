@@ -10,6 +10,7 @@ import { loadIcon } from '@iconify/utils/lib/loader/loader'
 import { searchForIcon } from '@iconify/utils/lib/loader/modern'
 import type { IconsOptions } from './types'
 import icons from './collections.json'
+import { customIconsPreloader } from './custom'
 
 const COLLECTION_NAME_PARTS_MAX = 3
 
@@ -34,6 +35,7 @@ export function createPresetIcons(lookupIconLoader: (options: IconsOptions) => P
     } = options
 
     const flags = getEnvFlags()
+    const preloader = customIconsPreloader()
 
     const loaderOptions: IconifyLoaderOptions = {
       addXmlNs: true,
@@ -47,7 +49,25 @@ export function createPresetIcons(lookupIconLoader: (options: IconsOptions) => P
         ...customizations,
         additionalProps: { ...extraProperties },
         trimCustomSvg: true,
+        async transform(svg, collection, icon) {
+          const result = typeof customizations.transform === 'function'
+            ? await customizations.transform(svg, collection, icon)
+            : svg
+          preloader.preload(result, collection, icon)
+          return result
+        },
         async iconCustomizer(collection, icon, props) {
+          const customIcon = preloader.get(collection, icon)
+          if (customIcon) {
+            const { attributes } = customIcon
+
+            if (attributes.width)
+              props.width = attributes.width
+
+            if (attributes.height)
+              props.height = attributes.height
+          }
+
           await customizations.iconCustomizer?.(collection, icon, props)
           if (unit) {
             if (!props.width)
